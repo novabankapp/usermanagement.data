@@ -1,10 +1,10 @@
-package repositories
+package users
 
 import (
 	"context"
 	"errors"
-	"github.com/novabankapp/usermanagement/usermanagement.data/database/postgres"
-	"github.com/novabankapp/usermanagement/usermanagement.data/domain"
+	"github.com/novabankapp/common.infrastructure/postgres"
+	"github.com/novabankapp/usermanagement.data/domain"
 	"gorm.io/gorm"
 )
 
@@ -47,7 +47,7 @@ func (rep *postgresUserRepository) Create(ctx context.Context, user domain.User)
 }
 func (rep *postgresUserRepository) Update(ctx context.Context, user domain.User) (bool, error) {
 
-	user.FillDefaults()
+	//user.FillDefaults()
 
 	// Create a user object
 	var value domain.User
@@ -70,7 +70,7 @@ func (rep *postgresUserRepository) Update(ctx context.Context, user domain.User)
 	return true, nil
 }
 func (rep *postgresUserRepository) Delete(ctx context.Context, user domain.User) (bool, error) {
-	var userId domain.UserID
+	userId := domain.UserID{ID: user.ID}
 	result := rep.conn.First(&user, "id = ?", userId.ID)
 	if result.Error != nil {
 

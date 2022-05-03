@@ -1,8 +1,8 @@
-package repositories
+package users
 
 import (
 	"context"
-	"github.com/novabankapp/usermanagement/usermanagement.data/domain"
+	"github.com/novabankapp/usermanagement.data/domain"
 )
 
 type UserRepository interface {

@@ -1,10 +1,10 @@
-package repositories
+package users
 
 import (
 	"context"
 	"errors"
 	"github.com/gocql/gocql"
-	"github.com/novabankapp/usermanagement/usermanagement.data/domain"
+	"github.com/novabankapp/usermanagement.data/domain"
 	"github.com/scylladb/gocqlx/v2"
 	"github.com/scylladb/gocqlx/v2/qb"
 	"log"

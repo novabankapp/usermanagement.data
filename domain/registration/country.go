@@ -1,8 +1,8 @@
-package domain
+package registration
 
 import "gorm.io/gorm"
 
-type ContactType struct {
+type Country struct {
 	gorm.Model
 	Name string `json:"name" binding:"required"`
 }

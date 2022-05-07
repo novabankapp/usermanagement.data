@@ -51,7 +51,7 @@ func Update[E Entity](rep *postgresRepository, ctx context.Context, entity E, id
 	// Read the user which is to be updated
 	result := rep.conn.First(&value, "id = ?", id).WithContext(ctx)
 	if result.Error != nil {
-		return false, errors.New("Error occurred while updating the entity")
+		return false, errors.New("error occurred while updating the entity")
 
 	}
 	value = entity
@@ -59,7 +59,7 @@ func Update[E Entity](rep *postgresRepository, ctx context.Context, entity E, id
 	// Save the updated user
 	tx := rep.conn.Save(&value)
 	if tx.RowsAffected != 1 {
-		return false, errors.New("Error occurred while updating entity")
+		return false, errors.New("error occurred while updating entity")
 	}
 	return true, nil
 }
@@ -69,16 +69,16 @@ func Delete[E Entity](rep *postgresRepository, ctx context.Context, id string) (
 	if result.Error != nil {
 
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return false, errors.New("Record not found")
+			return false, errors.New("record not found")
 		} else {
-			return false, errors.New("Error occurred while deleting entity")
+			return false, errors.New("error occurred while deleting entity")
 		}
 		return false, result.Error
 	}
 
 	tx := rep.conn.Delete(&value).WithContext(ctx)
 	if tx.RowsAffected != 1 {
-		return false, errors.New("Error occurred while deleting entity")
+		return false, errors.New("error occurred while deleting entity")
 
 	}
 	return true, nil

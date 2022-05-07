@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/novabankapp/common.infrastructure/postgres"
-	"github.com/novabankapp/usermanagement.data/domain"
+	"github.com/novabankapp/usermanagement.data/domain/registration"
 	"gorm.io/gorm"
 )
 
@@ -17,8 +17,8 @@ func NewPostGreRepository(conn *gorm.DB) UserRepository {
 		conn,
 	}
 }
-func (rep *postgresUserRepository) GetUser(ctx context.Context, id string) (*domain.User, error) {
-	var user domain.User
+func (rep *postgresUserRepository) GetUser(ctx context.Context, id string) (*registration.User, error) {
+	var user registration.User
 	result := rep.conn.First(&user, "id = ?", id).WithContext(ctx)
 	if result.Error != nil {
 
@@ -33,7 +33,7 @@ func (rep *postgresUserRepository) GetUser(ctx context.Context, id string) (*dom
 	}
 	return &user, nil
 }
-func (rep *postgresUserRepository) Create(ctx context.Context, user domain.User) (*string, error) {
+func (rep *postgresUserRepository) Create(ctx context.Context, user registration.User) (*string, error) {
 
 	user.FillDefaults()
 	result := rep.conn.Create(&user).WithContext(ctx)
@@ -45,12 +45,12 @@ func (rep *postgresUserRepository) Create(ctx context.Context, user domain.User)
 	return &user.ID, nil
 
 }
-func (rep *postgresUserRepository) Update(ctx context.Context, user domain.User) (bool, error) {
+func (rep *postgresUserRepository) Update(ctx context.Context, user registration.User) (bool, error) {
 
 	//user.FillDefaults()
 
 	// Create a user object
-	var value domain.User
+	var value registration.User
 
 	// Read the user which is to be updated
 	result := rep.conn.First(&value, "id = ?", user.ID).WithContext(ctx)
@@ -69,8 +69,8 @@ func (rep *postgresUserRepository) Update(ctx context.Context, user domain.User)
 	}
 	return true, nil
 }
-func (rep *postgresUserRepository) Delete(ctx context.Context, user domain.User) (bool, error) {
-	userId := domain.UserID{ID: user.ID}
+func (rep *postgresUserRepository) Delete(ctx context.Context, user registration.User) (bool, error) {
+	userId := registration.UserID{ID: user.ID}
 	result := rep.conn.First(&user, "id = ?", userId.ID)
 	if result.Error != nil {
 
@@ -89,8 +89,8 @@ func (rep *postgresUserRepository) Delete(ctx context.Context, user domain.User)
 	}
 	return true, nil
 }
-func (rep *postgresUserRepository) GetUsers(ctx context.Context, page int, pageSize int, query string, orderBy string) (*[]domain.User, error) {
-	var users []domain.User
+func (rep *postgresUserRepository) GetUsers(ctx context.Context, page int, pageSize int, query string, orderBy string) (*[]registration.User, error) {
+	var users []registration.User
 
 	tx := rep.conn
 	if query != "" {

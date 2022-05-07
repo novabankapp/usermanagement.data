@@ -1,6 +1,9 @@
-package domain
+package registration
+
+import "gorm.io/gorm"
 
 type ResidenceDetails struct {
+	gorm.Model
 	UserID            string `json:"user_id" binding:"required"`
 	ResidentialStatus string `json:"residential_status" binding:"required"`
 	ProofOfResidency  string `json:"proof_of_residency" binding:"required"`

@@ -1,8 +1,12 @@
-package domain
+package registration
 
-import "time"
+import (
+	"gorm.io/gorm"
+	"time"
+)
 
 type UserIdentification struct {
+	gorm.Model
 	UserID     string    `json:"user_id" binding:"required"`
 	TypeOfID   string    `json:"type_of_id" binding:"required"`
 	IDNumber   string    `json:"id_number" binding:"required"`

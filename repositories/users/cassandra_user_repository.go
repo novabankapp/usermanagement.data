@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/gocql/gocql"
-	"github.com/novabankapp/usermanagement.data/domain"
+	"github.com/novabankapp/usermanagement.data/domain/registration"
 	"github.com/scylladb/gocqlx/v2"
 	"github.com/scylladb/gocqlx/v2/qb"
 	"log"
@@ -17,8 +17,8 @@ type cassandraUserRepository struct {
 
 var columns = make([]string, 5)
 
-func (repo *cassandraUserRepository) GetUsers(ctx context.Context, page int, pageSize int, query string, orderBy string) (*[]domain.User, error) {
-	var results []domain.User
+func (repo *cassandraUserRepository) GetUsers(ctx context.Context, page int, pageSize int, query string, orderBy string) (*[]registration.User, error) {
+	var results []registration.User
 	getUser := qb.Select(repo.tableName).
 		Where(qb.Eq("id")).
 		Query(*repo.session).
@@ -31,7 +31,7 @@ func (repo *cassandraUserRepository) GetUsers(ctx context.Context, page int, pag
 	}
 	return &results, nil
 }
-func (repo *cassandraUserRepository) Create(ctx context.Context, user domain.User) (*string, error) {
+func (repo *cassandraUserRepository) Create(ctx context.Context, user registration.User) (*string, error) {
 
 	insertUser := qb.Insert(repo.tableName).
 		Columns(columns...).
@@ -45,7 +45,7 @@ func (repo *cassandraUserRepository) Create(ctx context.Context, user domain.Use
 	result := ""
 	return &result, nil
 }
-func (repo *cassandraUserRepository) Delete(ctx context.Context, user domain.User) (bool, error) {
+func (repo *cassandraUserRepository) Delete(ctx context.Context, user registration.User) (bool, error) {
 	deleteUser := qb.Delete(repo.tableName).
 		Where(qb.Eq("id")).
 		Query(*repo.session).
@@ -59,8 +59,8 @@ func (repo *cassandraUserRepository) Delete(ctx context.Context, user domain.Use
 
 	return applied, nil
 }
-func (repo *cassandraUserRepository) GetUser(ctx context.Context, ID string) (*domain.User, error) {
-	var userResult []domain.User
+func (repo *cassandraUserRepository) GetUser(ctx context.Context, ID string) (*registration.User, error) {
+	var userResult []registration.User
 	getUser := qb.Select(repo.tableName).
 		Where(qb.Eq("id")).
 		Query(*repo.session).
@@ -75,7 +75,7 @@ func (repo *cassandraUserRepository) GetUser(ctx context.Context, ID string) (*d
 	}
 	return &userResult[0], nil
 }
-func (repo *cassandraUserRepository) Update(ctx context.Context, user domain.User) (bool, error) {
+func (repo *cassandraUserRepository) Update(ctx context.Context, user registration.User) (bool, error) {
 	updateUser := qb.Update(repo.tableName).
 		Set(columns...).
 		Where(qb.Eq("id")).

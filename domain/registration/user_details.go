@@ -1,6 +1,9 @@
-package domain
+package registration
+
+import "gorm.io/gorm"
 
 type UserDetails struct {
+	gorm.Model
 	UserID        string `json:"user_id" binding:"required"`
 	Title         string `json:"firstname" binding:"required"`
 	DOB           string `json:"dob" binding:"required"`

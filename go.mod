@@ -15,6 +15,7 @@ require (
 )
 
 require (
+	github.com/golang/mock v1.4.4 // indirect
 	github.com/golang/snappy v0.0.3 // indirect
 	github.com/hailocab/go-hostpool v0.0.0-20160125115350-e80d13ce29ed // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect

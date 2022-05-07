@@ -8,7 +8,7 @@ import (
 type RegisterRepository interface {
 	Create(ctx context.Context, user registration.User) (*string, error)
 	VerifyEmail(ctx context.Context, email string, code string) (bool, error)
-	VerifyPhone(ctx context.Context, email string, code string) (bool, error)
+	VerifyPhone(ctx context.Context, phone string, code string) (bool, error)
 	VerifyOTP(cxt context.Context, userId string, pin string) (bool, error)
 	SaveDetails(cxt context.Context, userId string, details registration.UserDetails) (bool, error)
 	SaveResidenceDetails(cxt context.Context, userId string, details registration.ResidenceDetails) (bool, error)
@@ -17,4 +17,3 @@ type RegisterRepository interface {
 	SaveEmployment(cxt context.Context, userId string, employment registration.UserEmployment) (bool, error)
 	SaveContact(cxt context.Context, userId string, contact registration.Contact) (bool, error)
 }
-

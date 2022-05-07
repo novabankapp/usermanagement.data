@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/golang/mock/gomock"
 	"github.com/novabankapp/usermanagement.data/domain/registration"
-	reg "github.com/novabankapp/usermanagement.data/repositories/registration"
 	"reflect"
 )
 
@@ -16,7 +15,7 @@ type PostgresRegisterRepositoryMockRecorder struct {
 	mock *PostgresRegisterRepositoryMock
 }
 
-func NewMockUserPGRepository(ctrl *gomock.Controller) reg.RegisterRepository {
+func NewMockUserPGRepository(ctrl *gomock.Controller) *PostgresRegisterRepositoryMock {
 	mock := &PostgresRegisterRepositoryMock{ctrl: ctrl}
 	mock.recorder = &PostgresRegisterRepositoryMockRecorder{mock}
 	return mock

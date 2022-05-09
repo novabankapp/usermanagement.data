@@ -1,7 +1,8 @@
-package login
+package auth
 
 import (
 	"context"
+	"errors"
 	"github.com/fatih/structs"
 	"github.com/gocql/gocql"
 	"github.com/novabankapp/usermanagement.data/domain/account"
@@ -13,26 +14,45 @@ import (
 
 type CassandraAuthRepository struct {
 	session *gocqlx.Session
+	timeout time.Duration
 }
 
 func (repo CassandraAuthRepository) Login(ctx context.Context, username string, password string) (bool, error) {
-	var results []login.UserLogin
+	ctx, cancel := context.WithTimeout(ctx, repo.timeout)
+	defer cancel()
+
 	hashed, err := login.HashPassword(password)
 	if err != nil {
-		return false, nil
+		return false, err
 	}
-	getUser := qb.Select("user_login").
-		Where(qb.EqLit("username", username), qb.EqLit("password", *hashed)).
+	var userId string
+	if err := repo.session.Query(`SELECT user_id FROM user_login WHERE username = ? and password = ? LIMIT 1`,
+		[]string{username, *hashed}).Consistency(gocql.One).Scan(&userId); err != nil {
+		return false, err
+	}
+
+	getUserAccount := qb.Select("user_account").
+		Where(qb.EqLit("user_id", userId)).
 		Query(*repo.session).
 		WithContext(ctx)
-
-	errr := getUser.Select(&results)
-	if errr != nil {
+	var results []*account.UserAccount
+	errr := getUserAccount.Select(&results)
+	if errr != nil || len(results) < 1 {
 		return false, errr
+	}
+	acc := results[0]
+	if acc.IsLocked {
+		return false, errors.New("account locked")
+	}
+	if !acc.IsActive {
+		return false, errors.New("account not active")
 	}
 	return true, nil
 }
 func (repo CassandraAuthRepository) Create(ctx context.Context, userAccount account.UserAccount, userLogin login.UserLogin) (bool, error) {
+	ctx, cancel := context.WithTimeout(ctx, repo.timeout)
+	defer cancel()
+
 	accountColumns := structs.Names(&account.UserAccount{})
 	ts := time.Now().UnixNano() / 1000
 	batch := repo.session.NewBatch(gocql.LoggedBatch).WithTimestamp(ts)
@@ -48,7 +68,7 @@ func (repo CassandraAuthRepository) Create(ctx context.Context, userAccount acco
 		Columns(userLoginColumns...).
 		Query(*repo.session).
 		WithContext(ctx)
-	insertUserLogin.BindStruct(insertUserLogin)
+	insertUserLogin.BindStruct(userLogin)
 	batch.Query(insertUserLogin.String())
 	if err := repo.session.ExecuteBatch(batch); err != nil {
 		return false, err

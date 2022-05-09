@@ -18,7 +18,11 @@ type CassandraRepository struct {
 	timeout   time.Duration
 }
 
-const timeout time.Duration = 10000
+const (
+	COLUMN  = "column"
+	COMPARE = "compare"
+	VALUE   = "value"
+)
 
 func NewCassandraRepository(session *gocqlx.Session, tableName string, timeout time.Duration) base.Repository {
 	return &CassandraRepository{
@@ -29,7 +33,7 @@ func NewCassandraRepository(session *gocqlx.Session, tableName string, timeout t
 }
 func GetById[E base.Entity](rep *CassandraRepository, ctx context.Context, id string) (*E, error) {
 
-	ctx, cancel := context.WithTimeout(ctx, timeout)
+	ctx, cancel := context.WithTimeout(ctx, rep.timeout)
 	defer cancel()
 
 	var result []E
@@ -48,7 +52,7 @@ func GetById[E base.Entity](rep *CassandraRepository, ctx context.Context, id st
 	return &result[0], nil
 }
 func Create[E base.Entity](rep *CassandraRepository, ctx context.Context, entity E) (bool, error) {
-	ctx, cancel := context.WithTimeout(ctx, timeout)
+	ctx, cancel := context.WithTimeout(ctx, rep.timeout)
 	defer cancel()
 
 	columns := structs.Names(&E{})
@@ -64,7 +68,7 @@ func Create[E base.Entity](rep *CassandraRepository, ctx context.Context, entity
 	return true, nil
 }
 func Update[E base.Entity](rep *CassandraRepository, ctx context.Context, entity E, id string) (bool, error) {
-	ctx, cancel := context.WithTimeout(ctx, timeout)
+	ctx, cancel := context.WithTimeout(ctx, rep.timeout)
 	defer cancel()
 	columns := structs.Names(&E{})
 	updateUser := qb.Update(rep.tableName).
@@ -84,7 +88,7 @@ func Update[E base.Entity](rep *CassandraRepository, ctx context.Context, entity
 }
 func Delete[E base.Entity](rep *CassandraRepository, ctx context.Context, id string) (bool, error) {
 
-	ctx, cancel := context.WithTimeout(ctx, timeout)
+	ctx, cancel := context.WithTimeout(ctx, rep.timeout)
 	defer cancel()
 
 	ent, error := GetById(rep, ctx, id)
@@ -107,19 +111,48 @@ func Delete[E base.Entity](rep *CassandraRepository, ctx context.Context, id str
 }
 
 func Get[E base.Entity](rep *CassandraRepository, ctx context.Context,
-	page []byte, pageSize int, query string, orderBy string) (*[]E, error) {
+	page []byte, pageSize int, queries []map[string]string, orderBy string) (*[]E, error) {
 
-	ctx, cancel := context.WithTimeout(ctx, timeout)
+	ctx, cancel := context.WithTimeout(ctx, rep.timeout)
 	defer cancel()
+	wheres := make([]qb.Cmp, len(queries))
+	for query := range queries {
+		m := queries[query]
+		column := m[COLUMN]
+		compare := m[COMPARE]
+		value := m[VALUE]
+		var where qb.Cmp
+		switch compare {
+		case "<":
+			where = qb.LtLit(column, value)
+		case "<=":
+			where = qb.LtOrEqLit(column, value)
+		case ">":
+			where = qb.GtLit(column, value)
+		case ">=":
+			where = qb.GtOrEqLit(column, value)
+		case "=":
+			where = qb.EqLit(column, value)
+		default:
+			where = qb.EqLit(column, value)
 
+		}
+		wheres = append(wheres, where)
+
+	}
 	var results []E
 	get := qb.Select(rep.tableName).
+		OrderBy(orderBy, qb.DESC)
+	for i := range wheres {
+		get = get.Where(wheres[i])
+	}
+	query := get.
 		Query(*rep.session).
 		PageSize(pageSize).
 		PageState(page).
 		WithContext(ctx)
 
-	err := get.Select(&results)
+	err := query.Select(&results)
 	if err != nil {
 		return nil, err
 	}

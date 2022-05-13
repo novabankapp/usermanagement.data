@@ -3,6 +3,9 @@ package registration
 import (
 	"context"
 	"database/sql"
+	"regexp"
+	"testing"
+
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/google/uuid"
 	"github.com/novabankapp/usermanagement.data/domain/registration"
@@ -11,8 +14,6 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	"regexp"
-	"testing"
 )
 
 const (

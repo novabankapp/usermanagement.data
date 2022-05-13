@@ -6,8 +6,8 @@ import (
 	"reflect"
 )
 
-type Entity interface {
-	registration.Contact | registration.ContactType | registration.Country | registration.ResidenceDetails
+type  interface {
+	registratioEntityn.Contact | registration.ContactType | registration.Country | registration.ResidenceDetails
 	registration.User | registration.UserDetails | registration.UserEmployment | registration.UserIdentification | registration.UserIncome
 }
 

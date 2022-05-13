@@ -3,13 +3,15 @@ package cassandra
 import (
 	"context"
 	"errors"
+	"log"
+	"time"
+
 	"github.com/fatih/structs"
 	"github.com/gocql/gocql"
+	base2 "github.com/novabankapp/usermanagement.data/domain/base"
 	"github.com/novabankapp/usermanagement.data/repositories/base"
 	"github.com/scylladb/gocqlx/v2"
 	"github.com/scylladb/gocqlx/v2/qb"
-	"log"
-	"time"
 )
 
 type CassandraRepository struct {
@@ -31,7 +33,7 @@ func NewCassandraRepository(session *gocqlx.Session, tableName string, timeout t
 		timeout:   timeout,
 	}
 }
-func GetById[E base.Entity](rep *CassandraRepository, ctx context.Context, id string) (*E, error) {
+func GetById[E base2.CassandraEntity](rep *CassandraRepository, ctx context.Context, id string) (*E, error) {
 
 	ctx, cancel := context.WithTimeout(ctx, rep.timeout)
 	defer cancel()
@@ -51,7 +53,7 @@ func GetById[E base.Entity](rep *CassandraRepository, ctx context.Context, id st
 	}
 	return &result[0], nil
 }
-func Create[E base.Entity](rep *CassandraRepository, ctx context.Context, entity E) (bool, error) {
+func Create[E base2.CassandraEntity](rep *CassandraRepository, ctx context.Context, entity E) (bool, error) {
 	ctx, cancel := context.WithTimeout(ctx, rep.timeout)
 	defer cancel()
 
@@ -67,7 +69,7 @@ func Create[E base.Entity](rep *CassandraRepository, ctx context.Context, entity
 	}
 	return true, nil
 }
-func Update[E base.Entity](rep *CassandraRepository, ctx context.Context, entity E, id string) (bool, error) {
+func Update[E base2.CassandraEntity](rep *CassandraRepository, ctx context.Context, entity E, id string) (bool, error) {
 	ctx, cancel := context.WithTimeout(ctx, rep.timeout)
 	defer cancel()
 	columns := structs.Names(&E{})
@@ -86,7 +88,7 @@ func Update[E base.Entity](rep *CassandraRepository, ctx context.Context, entity
 
 	return applied, nil
 }
-func Delete[E base.Entity](rep *CassandraRepository, ctx context.Context, id string) (bool, error) {
+func Delete[E base2.CassandraEntity](rep *CassandraRepository, ctx context.Context, id string) (bool, error) {
 
 	ctx, cancel := context.WithTimeout(ctx, rep.timeout)
 	defer cancel()
@@ -110,7 +112,7 @@ func Delete[E base.Entity](rep *CassandraRepository, ctx context.Context, id str
 	return applied, nil
 }
 
-func Get[E base.Entity](rep *CassandraRepository, ctx context.Context,
+func Get[E base2.CassandraEntity](rep *CassandraRepository, ctx context.Context,
 	page []byte, pageSize int, queries []map[string]string, orderBy string) (*[]E, error) {
 
 	ctx, cancel := context.WithTimeout(ctx, rep.timeout)

@@ -8,4 +8,5 @@ type UserAccount struct {
 	CreatedAt time.Time `json:"created_at"`
 	IsLocked  bool      `json:"is_locked"`
 	IsActive  bool      `json:"is_active"`
+	IsKyc     bool      `json:"is_kyc"`
 }

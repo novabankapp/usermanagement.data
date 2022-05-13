@@ -3,13 +3,16 @@ package auth
 import (
 	"context"
 	"errors"
+	"fmt"
+	"time"
+
 	"github.com/fatih/structs"
 	"github.com/gocql/gocql"
+	"github.com/novabankapp/usermanagement.data/constants"
 	"github.com/novabankapp/usermanagement.data/domain/account"
 	"github.com/novabankapp/usermanagement.data/domain/login"
 	"github.com/scylladb/gocqlx/v2"
 	"github.com/scylladb/gocqlx/v2/qb"
-	"time"
 )
 
 type CassandraAuthRepository struct {
@@ -17,6 +20,79 @@ type CassandraAuthRepository struct {
 	timeout time.Duration
 }
 
+func NewCassandraAuthRepository(session *gocqlx.Session, timeout time.Duration) AuthRepository {
+	return &CassandraAuthRepository{
+		session: session,
+		timeout: timeout,
+	}
+}
+func (repo CassandraAuthRepository) VerifyOTP(cxt context.Context, userId string, pin string) (bool, error) {
+	ctx, cancel := context.WithTimeout(cxt, repo.timeout)
+	defer cancel()
+	now := time.Now()
+	var otp string
+	if err := repo.session.Query(fmt.Sprintf(`SELECT pin FROM %s WHERE user_id = ? and pin = ? and expiry_date >= ? LIMIT 1`, constants.LOGINOTP),
+		[]string{userId, pin, now.String()}).Consistency(gocql.One).WithContext(ctx).Scan(&otp); err != nil {
+		return false, err
+	}
+	return true, nil
+}
+func (repo CassandraAuthRepository) VerifyEmailCode(cxt context.Context, userId string, code string) (bool, error) {
+	ctx, cancel := context.WithTimeout(cxt, repo.timeout)
+	defer cancel()
+	now := time.Now()
+	if err := repo.session.Query(fmt.Sprintf(`SELECT code FROM %s WHERE user_id = ? and code = ? and expiry_date >= ? LIMIT 1`, constants.LOGINCODE),
+		[]string{userId, code, now.String()}).Consistency(gocql.One).WithContext(ctx).Scan(&code); err != nil {
+		return false, err
+	}
+	return true, nil
+
+}
+func (repo CassandraAuthRepository) ForgotPasswordWithEmail(ctx context.Context, email string) (*string, error) {
+	ctx, cancel := context.WithTimeout(ctx, repo.timeout)
+	defer cancel()
+	var userId string
+	if err := repo.session.Query(fmt.Sprintf(`SELECT user_id FROM %s WHERE email = ? LIMIT 1`, constants.USERLOGIN),
+		[]string{email}).Consistency(gocql.One).WithContext(ctx).Scan(&userId); err != nil {
+		return nil, err
+	}
+	return &userId, nil
+}
+func (repo CassandraAuthRepository) ForgotPasswordWithPhone(ctx context.Context, phone string) (*string, error) {
+	ctx, cancel := context.WithTimeout(ctx, repo.timeout)
+	defer cancel()
+	var userId string
+	if err := repo.session.Query(fmt.Sprintf(`SELECT user_id FROM %s WHERE phone = ? LIMIT 1`, constants.USERLOGIN),
+		[]string{phone}).Consistency(gocql.One).WithContext(ctx).Scan(&userId); err != nil {
+		return nil, err
+	}
+	return &userId, nil
+}
+func (repo CassandraAuthRepository) ChangePassword(ctx context.Context, userId string, oldPassword string, newPassword string) (bool, error) {
+	ctx, cancel := context.WithTimeout(ctx, repo.timeout)
+	defer cancel()
+	passwordHashed, err := login.HashPassword(newPassword)
+	if err != nil {
+		return false, err
+	}
+	oldPasswordHashed, err := login.HashPassword(oldPassword)
+	if err != nil {
+		return false, err
+	}
+	q := qb.Update(constants.USERLOGIN).
+		SetLit("password", *passwordHashed).
+		Where(qb.EqLit("user_id", userId)).
+		Where(qb.EqLit("password", *oldPasswordHashed)).
+		Query(*repo.session).
+		SerialConsistency(gocql.Serial).
+		WithContext(ctx)
+
+	applied, err := q.ExecCASRelease()
+	if err != nil {
+		return false, err
+	}
+	return applied, nil
+}
 func (repo CassandraAuthRepository) Login(ctx context.Context, username string, password string) (bool, error) {
 	ctx, cancel := context.WithTimeout(ctx, repo.timeout)
 	defer cancel()
@@ -26,12 +102,12 @@ func (repo CassandraAuthRepository) Login(ctx context.Context, username string, 
 		return false, err
 	}
 	var userId string
-	if err := repo.session.Query(`SELECT user_id FROM user_login WHERE username = ? and password = ? LIMIT 1`,
-		[]string{username, *hashed}).Consistency(gocql.One).Scan(&userId); err != nil {
+	if err := repo.session.Query(fmt.Sprintf(`SELECT user_id FROM %s WHERE username = ? and password = ? LIMIT 1`, constants.USERLOGIN),
+		[]string{username, *hashed}).Consistency(gocql.One).WithContext(ctx).Scan(&userId); err != nil {
 		return false, err
 	}
 
-	getUserAccount := qb.Select("user_account").
+	getUserAccount := qb.Select(constants.USERACCOUNT).
 		Where(qb.EqLit("user_id", userId)).
 		Query(*repo.session).
 		WithContext(ctx)
@@ -49,6 +125,25 @@ func (repo CassandraAuthRepository) Login(ctx context.Context, username string, 
 	}
 	return true, nil
 }
+func IsAccountLocked(userId string, ctx context.Context, session *gocqlx.Session) bool {
+	getUserAccount := qb.Select(constants.USERACCOUNT).
+		Where(qb.EqLit("user_id", userId)).
+		Query(*session).
+		WithContext(ctx)
+	var results []*account.UserAccount
+	errr := getUserAccount.Select(&results)
+	if errr != nil || len(results) < 1 {
+		return false
+	}
+	acc := results[0]
+	if acc.IsLocked {
+		return false
+	}
+	if !acc.IsActive {
+		return false
+	}
+	return true
+}
 func (repo CassandraAuthRepository) Create(ctx context.Context, userAccount account.UserAccount, userLogin login.UserLogin) (bool, error) {
 	ctx, cancel := context.WithTimeout(ctx, repo.timeout)
 	defer cancel()
@@ -56,7 +151,7 @@ func (repo CassandraAuthRepository) Create(ctx context.Context, userAccount acco
 	accountColumns := structs.Names(&account.UserAccount{})
 	ts := time.Now().UnixNano() / 1000
 	batch := repo.session.NewBatch(gocql.LoggedBatch).WithTimestamp(ts)
-	insertAccount := qb.Insert("user_account").
+	insertAccount := qb.Insert(constants.USERACCOUNT).
 		Columns(accountColumns...).
 		Query(*repo.session).
 		WithContext(ctx)
@@ -64,7 +159,7 @@ func (repo CassandraAuthRepository) Create(ctx context.Context, userAccount acco
 	batch.Query(insertAccount.String())
 
 	userLoginColumns := structs.Names(&login.UserLogin{})
-	insertUserLogin := qb.Insert("user_login").
+	insertUserLogin := qb.Insert(constants.USERLOGIN).
 		Columns(userLoginColumns...).
 		Query(*repo.session).
 		WithContext(ctx)

@@ -1,13 +1,16 @@
 package login
 
 import (
-	"golang.org/x/crypto/bcrypt"
 	"time"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserLogin struct {
 	ID        string    `json:"id"`
 	UserID    string    `json:"user_id" binding:"required"`
+	Email     string    `json:"email" binding:"required"`
+	Phone     string    `json:"phone" binding:"required"`
 	FirstName string    `json:"firstname" binding:"required"`
 	LastName  string    `json:"lastname" binding:"required"`
 	UserName  string    `json:"username" binding:"required"`

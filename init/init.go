@@ -29,12 +29,12 @@ func InitCassandra(session *gocqlx.Session) {
 	migrate.Callback = reg.Callback
 
 	// First run prints data
-	if err := migrate.FromFS(context.Background(), session, cql.Files); err != nil {
+	if err := migrate.FromFS(context.Background(), *session, Files); err != nil {
 
 	}
 
 	// Second run skips the processed files
-	if err := migrate.FromFS(context.Background(), session, cql.Files); err != nil {
+	if err := migrate.FromFS(context.Background(), *session, Files); err != nil {
 
 	}
 }

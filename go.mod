@@ -10,15 +10,18 @@ require (
 )
 
 require (
+	github.com/DATA-DOG/go-sqlmock v1.5.0
+	github.com/fatih/structs v1.1.0
+	github.com/golang/mock v1.4.4
 	github.com/novabankapp/common.infrastructure v1.1.0
 	github.com/shopspring/decimal v1.2.0
+	github.com/stretchr/testify v1.7.1
+	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
+	gorm.io/driver/postgres v1.3.1
 )
 
 require (
-	github.com/DATA-DOG/go-sqlmock v1.5.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/fatih/structs v1.1.0 // indirect
-	github.com/golang/mock v1.4.4 // indirect
 	github.com/golang/snappy v0.0.3 // indirect
 	github.com/hailocab/go-hostpool v0.0.0-20160125115350-e80d13ce29ed // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
@@ -33,11 +36,7 @@ require (
 	github.com/jinzhu/now v1.1.4 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/scylladb/go-reflectx v1.0.1 // indirect
-	github.com/stretchr/objx v0.2.0 // indirect
-	github.com/stretchr/testify v1.7.1 // indirect
-	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c // indirect
-	gorm.io/driver/postgres v1.3.1 // indirect
 )

@@ -1,4 +1,4 @@
-package cql
+package init
 
 import "embed"
 

@@ -1,13 +1,14 @@
 package base
 
 import (
+	"reflect"
+
 	"github.com/google/uuid"
 	"github.com/novabankapp/usermanagement.data/domain/registration"
-	"reflect"
 )
 
-type  interface {
-	registratioEntityn.Contact | registration.ContactType | registration.Country | registration.ResidenceDetails
+type Entity interface {
+	registration.Contact | registration.ContactType | registration.Country | registration.ResidenceDetails
 	registration.User | registration.UserDetails | registration.UserEmployment | registration.UserIdentification | registration.UserIncome
 }
 

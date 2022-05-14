@@ -8,6 +8,7 @@ import (
 
 	"github.com/fatih/structs"
 	"github.com/gocql/gocql"
+	"github.com/google/uuid"
 	"github.com/novabankapp/usermanagement.data/constants"
 	"github.com/novabankapp/usermanagement.data/domain/account"
 	"github.com/novabankapp/usermanagement.data/domain/login"
@@ -151,6 +152,7 @@ func (repo CassandraAuthRepository) Create(ctx context.Context, userAccount acco
 	accountColumns := structs.Names(&account.UserAccount{})
 	ts := time.Now().UnixNano() / 1000
 	batch := repo.session.NewBatch(gocql.LoggedBatch).WithTimestamp(ts)
+	userAccount.ID = uuid.New().String()
 	insertAccount := qb.Insert(constants.USERACCOUNT).
 		Columns(accountColumns...).
 		Query(*repo.session).
@@ -158,6 +160,7 @@ func (repo CassandraAuthRepository) Create(ctx context.Context, userAccount acco
 	insertAccount.BindStruct(userAccount)
 	batch.Query(insertAccount.String())
 
+	userAccount.ID = uuid.New().String()
 	userLoginColumns := structs.Names(&login.UserLogin{})
 	insertUserLogin := qb.Insert(constants.USERLOGIN).
 		Columns(userLoginColumns...).

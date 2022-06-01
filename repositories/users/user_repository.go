@@ -2,6 +2,7 @@ package users
 
 import (
 	"context"
+
 	"github.com/novabankapp/usermanagement.data/domain/registration"
 )
 

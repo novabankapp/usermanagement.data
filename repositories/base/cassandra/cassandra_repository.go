@@ -14,7 +14,7 @@ import (
 	"github.com/scylladb/gocqlx/v2/qb"
 )
 
-type CassandraRepository struct {
+type CassandraRepository[E base2.CassandraEntity] struct {
 	session   *gocqlx.Session
 	tableName string
 	timeout   time.Duration
@@ -33,7 +33,7 @@ func NewCassandraRepository(session *gocqlx.Session, tableName string, timeout t
 		timeout:   timeout,
 	}
 }
-func GetById[E base2.CassandraEntity](rep *CassandraRepository, ctx context.Context, id string) (*E, error) {
+func (rep *CassandraRepository[E]) GetById(ctx context.Context, id string) (*E, error) {
 
 	ctx, cancel := context.WithTimeout(ctx, rep.timeout)
 	defer cancel()
@@ -53,7 +53,7 @@ func GetById[E base2.CassandraEntity](rep *CassandraRepository, ctx context.Cont
 	}
 	return &result[0], nil
 }
-func Create[E base2.CassandraEntity](rep *CassandraRepository, ctx context.Context, entity E) (bool, error) {
+func (rep *CassandraRepository[E]) Create(ctx context.Context, entity E) (bool, error) {
 	ctx, cancel := context.WithTimeout(ctx, rep.timeout)
 	defer cancel()
 
@@ -69,7 +69,7 @@ func Create[E base2.CassandraEntity](rep *CassandraRepository, ctx context.Conte
 	}
 	return true, nil
 }
-func Update[E base2.CassandraEntity](rep *CassandraRepository, ctx context.Context, entity E, id string) (bool, error) {
+func (rep *CassandraRepository[E]) Update(ctx context.Context, entity E, id string) (bool, error) {
 	ctx, cancel := context.WithTimeout(ctx, rep.timeout)
 	defer cancel()
 	columns := structs.Names(&E{})
@@ -88,12 +88,12 @@ func Update[E base2.CassandraEntity](rep *CassandraRepository, ctx context.Conte
 
 	return applied, nil
 }
-func Delete[E base2.CassandraEntity](rep *CassandraRepository, ctx context.Context, id string) (bool, error) {
+func (rep *CassandraRepository[E]) Delete(ctx context.Context, id string) (bool, error) {
 
 	ctx, cancel := context.WithTimeout(ctx, rep.timeout)
 	defer cancel()
 
-	ent, error := GetById(rep, ctx, id)
+	ent, error := rep.GetById(ctx, id)
 
 	if error != nil {
 		return false, error
@@ -112,7 +112,7 @@ func Delete[E base2.CassandraEntity](rep *CassandraRepository, ctx context.Conte
 	return applied, nil
 }
 
-func Get[E base2.CassandraEntity](rep *CassandraRepository, ctx context.Context,
+func (rep *CassandraRepository[E]) Get(ctx context.Context,
 	page []byte, pageSize int, queries []map[string]string, orderBy string) (*[]E, error) {
 
 	ctx, cancel := context.WithTimeout(ctx, rep.timeout)

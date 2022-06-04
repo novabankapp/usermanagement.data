@@ -14,16 +14,27 @@ type UserLogin struct {
 	FirstName string    `json:"firstname" binding:"required"`
 	LastName  string    `json:"lastname" binding:"required"`
 	UserName  string    `json:"username" binding:"required"`
-	Password  string    `json:"password" binding:"required"`
+	Password  string    `json:"password"`
+	Pin       string    `json:"pin"`
 	CreatedAt time.Time `json:"created_at"`
 }
 
 func (u *UserLogin) HashPassword() error {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
-	if err != nil {
-		return err
+	if u.Password != "" {
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
+		if err != nil {
+			return err
+		}
+		u.Password = string(hashedPassword)
 	}
-	u.Password = string(hashedPassword)
+	if u.Pin != "" {
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(u.Pin), bcrypt.DefaultCost)
+		if err != nil {
+			return err
+		}
+		u.Pin = string(hashedPassword)
+	}
+
 	return nil
 }
 func HashPassword(password string) (*string, error) {
@@ -33,4 +44,7 @@ func HashPassword(password string) (*string, error) {
 	}
 	pass := string(hashedPassword)
 	return &pass, nil
+}
+func (u *UserLogin) ComparePasswords(password string) error {
+	return bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
 }

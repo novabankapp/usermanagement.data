@@ -145,7 +145,8 @@ func IsAccountLocked(userId string, ctx context.Context, session *gocqlx.Session
 	}
 	return true
 }
-func (repo CassandraAuthRepository) Create(ctx context.Context, userAccount account.UserAccount, userLogin login.UserLogin) (bool, error) {
+func (repo CassandraAuthRepository) Create(ctx context.Context, userAccount account.UserAccount,
+	userLogin login.UserLogin) (bool, error) {
 	ctx, cancel := context.WithTimeout(ctx, repo.timeout)
 	defer cancel()
 

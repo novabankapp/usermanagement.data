@@ -3,14 +3,14 @@ package postgres
 import (
 	"context"
 	"errors"
-	base2 "github.com/novabankapp/usermanagement.data/domain/base"
+	domainbase "github.com/novabankapp/usermanagement.data/domain/base"
 
 	"github.com/novabankapp/common.infrastructure/postgres"
 	"github.com/novabankapp/usermanagement.data/repositories/base"
 	"gorm.io/gorm"
 )
 
-type postgresRepository struct {
+type postgresRepository[E domainbase.Entity] struct {
 	conn *gorm.DB
 }
 
@@ -19,7 +19,7 @@ func NewPostGreRepository(conn *gorm.DB) base.Repository {
 		conn,
 	}
 }
-func GetById[E base2.Entity](rep *postgresRepository, ctx context.Context, id string) (*E, error) {
+func (rep *postgresRepository[E]) GetById(ctx context.Context, id string) (*E, error) {
 	var entity E
 	result := rep.conn.First(&entity, "id = ?", id).WithContext(ctx)
 	if result.Error != nil {
@@ -35,7 +35,7 @@ func GetById[E base2.Entity](rep *postgresRepository, ctx context.Context, id st
 	}
 	return &entity, nil
 }
-func Create[E base2.Entity](rep *postgresRepository, ctx context.Context, entity E) (*E, error) {
+func (rep *postgresRepository[E]) Create(ctx context.Context, entity E) (*E, error) {
 
 	result := rep.conn.Create(&entity).WithContext(ctx)
 	if result.Error != nil && result.RowsAffected != 1 {
@@ -46,7 +46,7 @@ func Create[E base2.Entity](rep *postgresRepository, ctx context.Context, entity
 	return &entity, nil
 
 }
-func Update[E base2.Entity](rep *postgresRepository, ctx context.Context, entity E, id string) (bool, error) {
+func (rep *postgresRepository[E]) Update(ctx context.Context, entity E, id string) (bool, error) {
 
 	// Create a user object
 	var value E
@@ -66,7 +66,7 @@ func Update[E base2.Entity](rep *postgresRepository, ctx context.Context, entity
 	}
 	return true, nil
 }
-func Delete[E base2.Entity](rep *postgresRepository, ctx context.Context, id string) (bool, error) {
+func (rep *postgresRepository[E]) Delete(ctx context.Context, id string) (bool, error) {
 	var value E
 	result := rep.conn.First(&value, "id = ?", id)
 	if result.Error != nil {
@@ -86,7 +86,7 @@ func Delete[E base2.Entity](rep *postgresRepository, ctx context.Context, id str
 	}
 	return true, nil
 }
-func Get[E base2.Entity](rep *postgresRepository, ctx context.Context,
+func (rep *postgresRepository[E]) Get(ctx context.Context,
 	page int, pageSize int, query string, orderBy string) (*[]E, error) {
 
 	var values []E

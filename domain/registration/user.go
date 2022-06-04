@@ -2,7 +2,6 @@ package registration
 
 import (
 	"github.com/google/uuid"
-	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"strings"
 )
@@ -16,7 +15,6 @@ type User struct {
 	FirstName          string             `json:"firstname" binding:"required"`
 	LastName           string             `json:"lastname" binding:"required"`
 	UserName           string             `json:"username" binding:"required"`
-	Password           string             `json:"password" binding:"required"`
 	CreatedAt          int64              `gorm:"autoCreateTime:milli" json:"created_at"`
 	UpdatedAt          int64              `gorm:"autoUpdateTime:milli" json:"updated_at"`
 	Email              string             `json:"email"`
@@ -36,25 +34,10 @@ func (u *User) FillDefaults() {
 		u.ID = uuid.New().String()
 	}
 }
-func (u *User) ComparePasswords(password string) error {
-	return bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
-}
-func (u *User) HashPassword() error {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
-	if err != nil {
-		return err
-	}
-	u.Password = string(hashedPassword)
-	return nil
-}
+
 func (u *User) PrepareCreate() error {
 	if u.Email != "" {
 		u.Email = strings.ToLower(strings.TrimSpace(u.Email))
-	}
-	u.Password = strings.TrimSpace(u.Password)
-
-	if err := u.HashPassword(); err != nil {
-		return err
 	}
 
 	return nil

@@ -9,7 +9,6 @@ import (
 	"github.com/fatih/structs"
 	"github.com/gocql/gocql"
 	base2 "github.com/novabankapp/usermanagement.data/domain/base"
-	"github.com/novabankapp/usermanagement.data/repositories/base"
 	"github.com/scylladb/gocqlx/v2"
 	"github.com/scylladb/gocqlx/v2/qb"
 )
@@ -26,8 +25,8 @@ const (
 	VALUE   = "value"
 )
 
-func NewCassandraRepository(session *gocqlx.Session, tableName string, timeout time.Duration) base.Repository {
-	return &CassandraRepository{
+func NewCassandraRepository[E base2.CassandraEntity](session *gocqlx.Session, tableName string, timeout time.Duration) *CassandraRepository[E] {
+	return &CassandraRepository[E]{
 		session:   session,
 		tableName: tableName,
 		timeout:   timeout,

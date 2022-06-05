@@ -17,7 +17,7 @@ func (p postgresRegisterRepository) Create(ctx context.Context, user registratio
 	user.FillDefaults()
 	err := user.PrepareCreate()
 	if err != nil {
-		return nil, errors.New("something wrong with the password")
+		return nil, err
 	}
 	result := p.conn.Create(&user).WithContext(ctx)
 	if result.Error != nil && result.RowsAffected != 1 {

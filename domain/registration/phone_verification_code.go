@@ -10,4 +10,5 @@ type PhoneVerificationCode struct {
 	Phone      string    `json:"email" binding:"required"`
 	ExpiryDate time.Time `json:"expiry_date" binding:"required"`
 	Code       string    `json:"code" binding:"required"`
+	Used       bool      `json:"used"`
 }

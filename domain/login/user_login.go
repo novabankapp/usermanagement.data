@@ -9,10 +9,10 @@ import (
 type UserLogin struct {
 	ID        string    `json:"id"`
 	UserID    string    `json:"user_id" binding:"required"`
-	Email     string    `json:"email" binding:"required"`
-	Phone     string    `json:"phone" binding:"required"`
-	FirstName string    `json:"firstname" binding:"required"`
-	LastName  string    `json:"lastname" binding:"required"`
+	Email     string    `json:"email"`
+	Phone     string    `json:"phone"`
+	FirstName string    `json:"firstname"`
+	LastName  string    `json:"lastname"`
 	UserName  string    `json:"username" binding:"required"`
 	Password  string    `json:"password"`
 	Pin       string    `json:"pin"`

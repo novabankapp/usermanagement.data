@@ -6,20 +6,30 @@ import (
 	domainbase "github.com/novabankapp/usermanagement.data/domain/base"
 
 	"github.com/novabankapp/common.infrastructure/postgres"
-	"github.com/novabankapp/usermanagement.data/repositories/base"
 	"gorm.io/gorm"
 )
 
-type postgresRepository[E domainbase.Entity] struct {
+type PostgresRepository[E domainbase.Entity] struct {
 	conn *gorm.DB
 }
 
-func NewPostGreRepository(conn *gorm.DB) base.Repository {
-	return &postgresRepository{
+func NewPostGreRepository[E domainbase.Entity](conn *gorm.DB) *PostgresRepository[E] {
+	return &PostgresRepository[E]{
 		conn,
 	}
 }
-func (rep *postgresRepository[E]) GetById(ctx context.Context, id string) (*E, error) {
+func (rep *PostgresRepository[E]) Create(ctx context.Context, entity E) (*E, error) {
+
+	result := rep.conn.Create(&entity).WithContext(ctx)
+	if result.Error != nil && result.RowsAffected != 1 {
+		return nil, errors.New("Error occurred while creating a new entity")
+
+	}
+
+	return &entity, nil
+
+}
+func (rep *PostgresRepository[E]) GetById(ctx context.Context, id string) (*E, error) {
 	var entity E
 	result := rep.conn.First(&entity, "id = ?", id).WithContext(ctx)
 	if result.Error != nil {
@@ -35,18 +45,8 @@ func (rep *postgresRepository[E]) GetById(ctx context.Context, id string) (*E, e
 	}
 	return &entity, nil
 }
-func (rep *postgresRepository[E]) Create(ctx context.Context, entity E) (*E, error) {
 
-	result := rep.conn.Create(&entity).WithContext(ctx)
-	if result.Error != nil && result.RowsAffected != 1 {
-		return nil, errors.New("Error occurred while creating a new entity")
-
-	}
-
-	return &entity, nil
-
-}
-func (rep *postgresRepository[E]) Update(ctx context.Context, entity E, id string) (bool, error) {
+func (rep *PostgresRepository[E]) Update(ctx context.Context, entity E, id string) (bool, error) {
 
 	// Create a user object
 	var value E
@@ -66,7 +66,7 @@ func (rep *postgresRepository[E]) Update(ctx context.Context, entity E, id strin
 	}
 	return true, nil
 }
-func (rep *postgresRepository[E]) Delete(ctx context.Context, id string) (bool, error) {
+func (rep *PostgresRepository[E]) Delete(ctx context.Context, id string) (bool, error) {
 	var value E
 	result := rep.conn.First(&value, "id = ?", id)
 	if result.Error != nil {
@@ -86,12 +86,12 @@ func (rep *postgresRepository[E]) Delete(ctx context.Context, id string) (bool, 
 	}
 	return true, nil
 }
-func (rep *postgresRepository[E]) Get(ctx context.Context,
-	page int, pageSize int, query string, orderBy string) (*[]E, error) {
+func (rep *PostgresRepository[E]) Get(ctx context.Context,
+	page int, pageSize int, query *E, orderBy string) (*[]E, error) {
 
 	var values []E
 	tx := rep.conn
-	if query != "" {
+	if query != nil {
 		tx = tx.Where(query)
 	}
 	if orderBy != "" {

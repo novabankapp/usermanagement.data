@@ -4,6 +4,7 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"strings"
+	"time"
 )
 
 type UserID struct {
@@ -15,8 +16,8 @@ type User struct {
 	FirstName          string             `json:"firstname" binding:"required"`
 	LastName           string             `json:"lastname" binding:"required"`
 	UserName           string             `json:"username" binding:"required"`
-	CreatedAt          int64              `gorm:"autoCreateTime:milli" json:"created_at"`
-	UpdatedAt          int64              `gorm:"autoUpdateTime:milli" json:"updated_at"`
+	CreatedAt          time.Time          `json:"created_at"`
+	UpdatedAt          time.Time          `json:"updated_at"`
 	Email              string             `json:"email"`
 	Phone              string             `json:"phone"`
 	DeletedAt          gorm.DeletedAt     `json:"deleted_at"`

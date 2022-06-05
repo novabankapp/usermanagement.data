@@ -154,6 +154,10 @@ func (repo CassandraAuthRepository) Create(ctx context.Context, userAccount acco
 	ts := time.Now().UnixNano() / 1000
 	batch := repo.session.NewBatch(gocql.LoggedBatch).WithTimestamp(ts)
 	userAccount.ID = uuid.New().String()
+	userAccount.CreatedAt = time.Now()
+	userAccount.IsActive = true
+	userAccount.IsLocked = false
+	userAccount.IsKyc = false
 	insertAccount := qb.Insert(constants.USERACCOUNT).
 		Columns(accountColumns...).
 		Query(*repo.session).
@@ -161,7 +165,9 @@ func (repo CassandraAuthRepository) Create(ctx context.Context, userAccount acco
 	insertAccount.BindStruct(userAccount)
 	batch.Query(insertAccount.String())
 
-	userAccount.ID = uuid.New().String()
+	userLogin.ID = uuid.New().String()
+	userLogin.CreatedAt = time.Now()
+	userLogin.HashPassword()
 	userLoginColumns := structs.Names(&login.UserLogin{})
 	insertUserLogin := qb.Insert(constants.USERLOGIN).
 		Columns(userLoginColumns...).

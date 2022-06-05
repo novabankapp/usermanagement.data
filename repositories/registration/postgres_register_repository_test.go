@@ -68,10 +68,9 @@ func (s *Suite) Test_repository_Create() {
 		Email:     "email@gmail.com",
 		FirstName: "FirstName",
 		LastName:  "LastName",
-		Password:  "123456",
 	}
 	s.mock.ExpectQuery(regexp.QuoteMeta(createUserQuery)).
-		WithArgs(id, user.UserName, user.FirstName, user.LastName, user.Email, user.Password).
+		WithArgs(id, user.UserName, user.FirstName, user.LastName, user.Email).
 		WillReturnRows(
 			sqlmock.NewRows([]string{"id"}).AddRow(id))
 

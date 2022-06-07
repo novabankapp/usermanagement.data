@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"github.com/scylladb/gocqlx/v2"
 
 	"github.com/novabankapp/usermanagement.data/domain/account"
 	"github.com/novabankapp/usermanagement.data/domain/login"
@@ -15,4 +16,6 @@ type AuthRepository interface {
 	ForgotPasswordWithEmail(ctx context.Context, email string) (*string, error)
 	ForgotPasswordWithPhone(ctx context.Context, phone string) (*string, error)
 	ChangePassword(ctx context.Context, userId string, oldPassword string, newPassword string) (bool, error)
+	IsAccountKycCompliant(userId string, ctx context.Context, session *gocqlx.Session) bool
+	IsAccountLocked(userId string, ctx context.Context, session *gocqlx.Session) bool
 }

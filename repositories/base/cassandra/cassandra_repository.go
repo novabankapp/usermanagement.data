@@ -13,7 +13,7 @@ import (
 	"github.com/scylladb/gocqlx/v2/qb"
 )
 
-type CassandraRepository[E base2.CassandraEntity] struct {
+type CassandraRepository[E base2.NoSqlEntity] struct {
 	session   *gocqlx.Session
 	tableName string
 	timeout   time.Duration
@@ -25,7 +25,7 @@ const (
 	VALUE   = "value"
 )
 
-func NewCassandraRepository[E base2.CassandraEntity](session *gocqlx.Session, tableName string, timeout time.Duration) *CassandraRepository[E] {
+func NewCassandraRepository[E base2.NoSqlEntity](session *gocqlx.Session, tableName string, timeout time.Duration) *CassandraRepository[E] {
 	return &CassandraRepository[E]{
 		session:   session,
 		tableName: tableName,

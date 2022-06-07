@@ -126,7 +126,7 @@ func (repo CassandraAuthRepository) Login(ctx context.Context, username string, 
 	}
 	return true, nil
 }
-func IsAccountLocked(userId string, ctx context.Context, session *gocqlx.Session) bool {
+func (repo CassandraAuthRepository) IsAccountLocked(userId string, ctx context.Context, session *gocqlx.Session) bool {
 	getUserAccount := qb.Select(constants.USERACCOUNT).
 		Where(qb.EqLit("user_id", userId)).
 		Query(*session).
@@ -144,6 +144,20 @@ func IsAccountLocked(userId string, ctx context.Context, session *gocqlx.Session
 		return false
 	}
 	return true
+}
+func (repo CassandraAuthRepository) IsAccountKycCompliant(userId string, ctx context.Context, session *gocqlx.Session) bool {
+	getUserAccount := qb.Select(constants.KYC_COMPLIANT).
+		Where(qb.EqLit("user_id", userId)).
+		Query(*session).
+		WithContext(ctx)
+	var results []*account.KycCompliant
+	error := getUserAccount.Select(&results)
+	if error != nil || len(results) < 1 {
+		return false
+	}
+	acc := results[0]
+
+	return acc.IsKycCompliant()
 }
 func (repo CassandraAuthRepository) Create(ctx context.Context, userAccount account.UserAccount,
 	userLogin login.UserLogin) (bool, error) {

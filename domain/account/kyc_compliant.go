@@ -6,6 +6,7 @@ import (
 )
 
 type KycCompliant struct {
+	ID                    string `json:"id"`
 	UserId                string `json:"user_id"`
 	HasUserDetails        bool   `json:"has_user_details"`
 	HasResidenceDetails   bool   `json:"has_residence_details"`
@@ -18,7 +19,7 @@ func (k *KycCompliant) IsKycCompliant() bool {
 	fields := structs.Fields(k)
 	compliant := false
 	for _, field := range fields {
-		if field.Name() == "UserId" {
+		if field.Name() == "UserId" || field.Name() == "ID" {
 			continue
 		}
 

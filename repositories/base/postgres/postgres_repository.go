@@ -46,7 +46,7 @@ func (rep *PostgresRepository[E]) GetById(ctx context.Context, id string) (*E, e
 	return &entity, nil
 }
 
-func (rep *PostgresRepository[E]) Update(ctx context.Context, entity E, id string) (bool, error) {
+func (rep *PostgresRepository[E]) Update(ctx context.Context, entity E, id uint) (bool, error) {
 
 	// Create a user object
 	var value E
@@ -85,6 +85,22 @@ func (rep *PostgresRepository[E]) Delete(ctx context.Context, id string) (bool, 
 
 	}
 	return true, nil
+}
+func (rep *PostgresRepository[E]) GetByCondition(ctx context.Context, query *E) (*E, error) {
+
+	var values []E
+	tx := rep.conn
+	if query != nil {
+		tx = tx.Where(query)
+	}
+
+	tx = tx.Scopes().Find(&values).WithContext(ctx)
+
+	if tx.RowsAffected == 0 {
+		return nil, errors.New("Read users returned with empty results")
+	}
+	return &values[0], nil
+
 }
 func (rep *PostgresRepository[E]) Get(ctx context.Context,
 	page int, pageSize int, query *E, orderBy string) (*[]E, error) {

@@ -3,6 +3,7 @@ package cassandra
 import (
 	"context"
 	"errors"
+	"github.com/google/uuid"
 	"log"
 	"time"
 
@@ -55,8 +56,15 @@ func (rep *CassandraRepository[E]) GetById(ctx context.Context, id string) (*E, 
 func (rep *CassandraRepository[E]) Create(ctx context.Context, entity E) (bool, error) {
 	ctx, cancel := context.WithTimeout(ctx, rep.timeout)
 	defer cancel()
-
-	columns := structs.Names(&E{})
+	fields := structs.Fields(entity)
+	for _, field := range fields {
+		if field.Name() == "ID" {
+			field.Set(uuid.New().String())
+		} else {
+			continue
+		}
+	}
+	columns := structs.Names(entity)
 	insert := qb.Insert(rep.tableName).
 		Columns(columns...).
 		Query(*rep.session).
@@ -74,7 +82,7 @@ func (rep *CassandraRepository[E]) Update(ctx context.Context, entity E, id stri
 	columns := structs.Names(&E{})
 	updateUser := qb.Update(rep.tableName).
 		Set(columns...).
-		Where(qb.EqLit("id", id)).
+		Where(qb.EqLit("ID", id)).
 		Query(*rep.session).
 		SerialConsistency(gocql.Serial).WithContext(ctx)
 
@@ -158,4 +166,49 @@ func (rep *CassandraRepository[E]) Get(ctx context.Context,
 		return nil, err
 	}
 	return &results, nil
+}
+func (rep *CassandraRepository[E]) GetByCondition(ctx context.Context,
+	queries []map[string]string) (*E, error) {
+
+	ctx, cancel := context.WithTimeout(ctx, rep.timeout)
+	defer cancel()
+	wheres := make([]qb.Cmp, len(queries))
+	for query := range queries {
+		m := queries[query]
+		column := m[COLUMN]
+		compare := m[COMPARE]
+		value := m[VALUE]
+		var where qb.Cmp
+		switch compare {
+		case "<":
+			where = qb.LtLit(column, value)
+		case "<=":
+			where = qb.LtOrEqLit(column, value)
+		case ">":
+			where = qb.GtLit(column, value)
+		case ">=":
+			where = qb.GtOrEqLit(column, value)
+		case "=":
+			where = qb.EqLit(column, value)
+		default:
+			where = qb.EqLit(column, value)
+
+		}
+		wheres = append(wheres, where)
+
+	}
+	var results []E
+	get := qb.Select(rep.tableName)
+	for i := range wheres {
+		get = get.Where(wheres[i])
+	}
+	query := get.
+		Query(*rep.session).
+		WithContext(ctx)
+
+	err := query.Select(&results)
+	if err != nil {
+		return nil, err
+	}
+	return &results[0], nil
 }

@@ -66,7 +66,7 @@ func (rep *PostgresRepository[E]) Update(ctx context.Context, entity E, id uint)
 	}
 	return true, nil
 }
-func (rep *PostgresRepository[E]) Delete(ctx context.Context, id string) (bool, error) {
+func (rep *PostgresRepository[E]) Delete(ctx context.Context, id uint) (bool, error) {
 	var value E
 	result := rep.conn.First(&value, "id = ?", id)
 	if result.Error != nil {

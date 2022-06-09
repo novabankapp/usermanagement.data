@@ -171,7 +171,6 @@ func (repo CassandraAuthRepository) Create(ctx context.Context, userAccount acco
 	userAccount.CreatedAt = time.Now()
 	userAccount.IsActive = true
 	userAccount.IsLocked = false
-	userAccount.IsKyc = false
 	insertAccount := qb.Insert(constants.USERACCOUNT).
 		Columns(accountColumns...).
 		Query(*repo.session).

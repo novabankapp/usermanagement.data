@@ -94,37 +94,46 @@ func (repo CassandraAuthRepository) ChangePassword(ctx context.Context, userId s
 	}
 	return applied, nil
 }
-func (repo CassandraAuthRepository) Login(ctx context.Context, username string, password string) (bool, error) {
+func (repo CassandraAuthRepository) GetUserById(cxt context.Context, userId string) (*login.UserLogin, error) {
+	cxt, cancel := context.WithTimeout(cxt, repo.timeout)
+	defer cancel()
+	var user login.UserLogin
+	if err := repo.session.Query(fmt.Sprintf(`SELECT * FROM %s WHERE user_id = ? LIMIT 1`, constants.USERLOGIN),
+		[]string{userId}).Consistency(gocql.One).WithContext(cxt).Scan(&user); err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+func (repo CassandraAuthRepository) Login(ctx context.Context, username string, password string) (*[]account.UserAccount, error) {
 	ctx, cancel := context.WithTimeout(ctx, repo.timeout)
 	defer cancel()
 
 	hashed, err := login.HashPassword(password)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 	var userId string
-	if err := repo.session.Query(fmt.Sprintf(`SELECT user_id FROM %s WHERE username = ? and password = ? LIMIT 1`, constants.USERLOGIN),
-		[]string{username, *hashed}).Consistency(gocql.One).WithContext(ctx).Scan(&userId); err != nil {
-		return false, err
+	var realPassword string
+	if err := repo.session.Query(fmt.Sprintf(`SELECT user_id, password FROM %s WHERE username = ? LIMIT 1`, constants.USERLOGIN),
+		[]string{username}).Consistency(gocql.One).WithContext(ctx).Scan(&userId, realPassword); err != nil {
+		return nil, err
 	}
 
-	getUserAccount := qb.Select(constants.USERACCOUNT).
+	user := login.UserLogin{UserID: userId, Password: realPassword}
+	e := user.ComparePasswords(*hashed)
+	if e != nil {
+		return nil, errors.New("password doesn't match")
+	}
+	getUserAccounts := qb.Select(constants.USERACCOUNT).
 		Where(qb.EqLit("user_id", userId)).
 		Query(*repo.session).
 		WithContext(ctx)
-	var results []*account.UserAccount
-	errr := getUserAccount.Select(&results)
-	if errr != nil || len(results) < 1 {
-		return false, errr
+	var results *[]account.UserAccount
+	errr := getUserAccounts.Select(&results)
+	if errr != nil {
+		return nil, errr
 	}
-	acc := results[0]
-	if acc.IsLocked {
-		return false, errors.New("account locked")
-	}
-	if !acc.IsActive {
-		return false, errors.New("account not active")
-	}
-	return true, nil
+	return results, nil
 }
 func (repo CassandraAuthRepository) IsAccountLocked(userId string, ctx context.Context, session *gocqlx.Session) bool {
 	getUserAccount := qb.Select(constants.USERACCOUNT).

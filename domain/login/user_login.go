@@ -17,6 +17,7 @@ type UserLogin struct {
 	Password  string    `json:"password"`
 	Pin       string    `json:"pin"`
 	IsActive  bool      `json:"is_active"`
+	IsLocked  bool      `json:"is_locked"`
 	CreatedAt time.Time `json:"created_at"`
 }
 

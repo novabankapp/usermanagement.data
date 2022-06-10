@@ -13,10 +13,11 @@ type AuthRepository interface {
 	VerifyOTP(cxt context.Context, userId string, pin string) (bool, error)
 	GetUserById(cxt context.Context, userId string) (*login.UserLogin, error)
 	VerifyEmailCode(cxt context.Context, userId string, code string) (bool, error)
+	CheckUsername(cxt context.Context, username string) (bool, error)
+	CheckEmail(cxt context.Context, email string) (bool, error)
+	DeleteUser(cxt context.Context, userId string) (bool, error)
 	Login(ctx context.Context, username string, password string) (*[]account.UserAccount, error)
-	ForgotPasswordWithEmail(ctx context.Context, email string) (*string, error)
-	ForgotPasswordWithPhone(ctx context.Context, phone string) (*string, error)
 	ChangePassword(ctx context.Context, userId string, oldPassword string, newPassword string) (bool, error)
-	IsAccountKycCompliant(userId string, ctx context.Context, session *gocqlx.Session) bool
+	IsUserKycCompliant(userId string, ctx context.Context, session *gocqlx.Session) bool
 	IsAccountLocked(userId string, ctx context.Context, session *gocqlx.Session) bool
 }

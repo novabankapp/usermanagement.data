@@ -59,8 +59,7 @@ func (rep *postgresUserRepository) Update(ctx context.Context, user registration
 
 	}
 	// Update the desired values using the request payload
-	value.FirstName = user.FirstName
-	value.LastName = user.LastName
+	value = user
 
 	// Save the updated user
 	tx := rep.conn.Save(&value)

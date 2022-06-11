@@ -200,7 +200,7 @@ func (repo CassandraAuthRepository) IsUserKycCompliant(userId string, ctx contex
 	return acc.IsKycCompliant()
 }
 func (repo CassandraAuthRepository) Create(ctx context.Context, userAccount account.UserAccount,
-	userLogin login.UserLogin) (bool, error) {
+	userLogin login.UserLogin) (accountId *string, userId *string, error error) {
 	ctx, cancel := context.WithTimeout(ctx, repo.timeout)
 	defer cancel()
 
@@ -229,8 +229,8 @@ func (repo CassandraAuthRepository) Create(ctx context.Context, userAccount acco
 	insertUserLogin.BindStruct(userLogin)
 	batch.Query(insertUserLogin.String())
 	if err := repo.session.ExecuteBatch(batch); err != nil {
-		return false, err
+		return nil, nil, err
 	}
 
-	return true, nil
+	return &userLogin.ID, &userAccount.ID, nil
 }

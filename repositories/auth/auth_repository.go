@@ -9,7 +9,7 @@ import (
 )
 
 type AuthRepository interface {
-	Create(ctx context.Context, userAccount account.UserAccount, userLogin login.UserLogin) (bool, error)
+	Create(ctx context.Context, userAccount account.UserAccount, userLogin login.UserLogin) (accountId *string, userId *string, error error)
 	VerifyOTP(cxt context.Context, userId string, pin string) (bool, error)
 	GetUserById(cxt context.Context, userId string) (*login.UserLogin, error)
 	VerifyEmailCode(cxt context.Context, userId string, code string) (bool, error)

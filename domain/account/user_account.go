@@ -9,3 +9,7 @@ type UserAccount struct {
 	IsLocked  bool      `json:"is_locked"`
 	IsActive  bool      `json:"is_active"`
 }
+
+func (k UserAccount) IsNoSQLEntity() bool {
+	return true
+}

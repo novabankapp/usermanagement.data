@@ -30,6 +30,10 @@ type User struct {
 	UserOneTimePin     UserOneTimePin     `json:"one_time_pin" gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }
 
+func (e User) IsRDBMSEntity() bool {
+	return true
+}
+
 func (u *User) FillDefaults() {
 	if u.ID == "" {
 		u.ID = uuid.New().String()

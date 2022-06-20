@@ -8,3 +8,7 @@ type UserEmployment struct {
 	NameOfEmployer string `json:"name_of_employer" binding:"required"`
 	Industry       string `json:"industry" binding:"required"`
 }
+
+func (e UserEmployment) IsRDBMSEntity() bool {
+	return true
+}

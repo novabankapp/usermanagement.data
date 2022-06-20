@@ -21,6 +21,10 @@ type UserLogin struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+func (k UserLogin) IsNoSQLEntity() bool {
+	return true
+}
+
 func (u *UserLogin) HashPassword() error {
 	if u.Password != "" {
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)

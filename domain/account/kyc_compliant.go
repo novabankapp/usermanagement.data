@@ -2,6 +2,7 @@ package account
 
 import (
 	"github.com/fatih/structs"
+	"github.com/novabankapp/common.data/domain/base"
 	"reflect"
 )
 
@@ -13,6 +14,14 @@ type KycCompliant struct {
 	HasUserIdentification bool   `json:"has_user_identification"`
 	HasUserIncome         bool   `json:"has_user_income"`
 	HasUserEmployment     bool   `json:"has_user_employment"`
+}
+
+func (k KycCompliant) IsNoSQLEntity() bool {
+	return true
+}
+
+func NewEntity() base.NoSQLEntity {
+	return &KycCompliant{}
 }
 
 func (k *KycCompliant) IsKycCompliant() bool {

@@ -8,3 +8,7 @@ type UserAccountActivity struct {
 	Activity     string    `json:"activity"`
 	ActivityDate time.Time `json:"created_at"`
 }
+
+func (k UserAccountActivity) IsNoSQLEntity() bool {
+	return true
+}

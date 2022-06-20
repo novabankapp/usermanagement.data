@@ -9,3 +9,7 @@ type Contact struct {
 	ContactType ContactType `json:"contact_type" gorm:"foreignKey:TypeID"`
 	Value       string      `json:"value" binding:"required"`
 }
+
+func (e Contact) IsRDBMSEntity() bool {
+	return true
+}

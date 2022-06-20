@@ -22,6 +22,8 @@ require (
 
 replace github.com/novabankapp/common.infrastructure v1.3.0 => C:\Projects\golang\github.com\novabankapp\common.infrastructure
 
+replace github.com/novabankapp/common.data v1.0.2 => C:\Projects\golang\github.com\novabankapp\common.data
+
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/golang/snappy v0.0.3 // indirect
@@ -36,6 +38,7 @@ require (
 	github.com/jackc/pgx/v4 v4.14.1 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.4 // indirect
+	github.com/novabankapp/common.data v1.0.2 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/scylladb/go-reflectx v1.0.1 // indirect
 	golang.org/x/text v0.3.7 // indirect

@@ -12,3 +12,7 @@ type PhoneVerificationCode struct {
 	Code       string    `json:"code" binding:"required"`
 	Used       bool      `json:"used"`
 }
+
+func (e PhoneVerificationCode) IsRDBMSEntity() bool {
+	return true
+}

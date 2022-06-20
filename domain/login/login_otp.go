@@ -8,3 +8,7 @@ type OtpLogin struct {
 	Pin        string    `json:"pin" binding:"required"`
 	ExpiryDate time.Time `json:"expiry_date" binding:"required"`
 }
+
+func (k OtpLogin) IsNoSQLEntity() bool {
+	return true
+}

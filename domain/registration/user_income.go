@@ -12,3 +12,7 @@ type UserIncome struct {
 	MonthlyIncome decimal.Decimal `json:"monthly_income" sql:"type:decimal(20,2);"`
 	ProofOfSource string          `json:"proof_of_source" binding:"required"`
 }
+
+func (e UserIncome) IsRDBMSEntity() bool {
+	return true
+}

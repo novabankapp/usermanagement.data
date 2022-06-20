@@ -8,3 +8,7 @@ type EmailPasswordReset struct {
 	Phrase     string    `json:"pin" binding:"required"`
 	ExpiryDate time.Time `json:"expiry_date" binding:"required"`
 }
+
+func (k EmailPasswordReset) IsNoSQLEntity() bool {
+	return true
+}

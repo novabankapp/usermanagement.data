@@ -12,3 +12,7 @@ type ResidenceDetails struct {
 	CountryOfBirthID  int
 	CountryOfBirth    Country `gorm:"foreignKey:CountryOfBirthID" json:"country_of_birth"`
 }
+
+func (e ResidenceDetails) IsRDBMSEntity() bool {
+	return true
+}

@@ -13,3 +13,7 @@ type UserIdentification struct {
 	IssueDate  time.Time `json:"issue_date" binding:"required"`
 	ExpiryDate time.Time `json:"expiry_date" binding:"required"`
 }
+
+func (e UserIdentification) IsRDBMSEntity() bool {
+	return true
+}

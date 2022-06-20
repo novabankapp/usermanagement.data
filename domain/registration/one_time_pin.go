@@ -11,3 +11,7 @@ type UserOneTimePin struct {
 	Pin        string    `json:"pin" binding:"required"`
 	ExpiryDate time.Time `json:"expiry_date" binding:"required"`
 }
+
+func (e UserOneTimePin) IsRDBMSEntity() bool {
+	return true
+}

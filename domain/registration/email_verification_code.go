@@ -12,3 +12,7 @@ type EmailVerificationCode struct {
 	Used       bool      `json:"used"`
 	Code       string    `json:"code" binding:"required"`
 }
+
+func (e EmailVerificationCode) IsRDBMSEntity() bool {
+	return true
+}

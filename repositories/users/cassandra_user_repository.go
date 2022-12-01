@@ -17,7 +17,7 @@ type cassandraUserRepository struct {
 
 var columns = make([]string, 5)
 
-func (repo *cassandraUserRepository) GetUsers(ctx context.Context, page int, pageSize int, query string, orderBy string) (*[]registration.User, error) {
+func (repo *cassandraUserRepository) GetUsers(ctx context.Context, page int, pageSize int, query *string, orderBy *string) (*[]registration.User, error) {
 	var results []registration.User
 	getUser := qb.Select(repo.tableName).
 		Where(qb.Eq("id")).

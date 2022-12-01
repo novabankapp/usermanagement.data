@@ -1,27 +1,28 @@
 package login
 
 import (
-	"time"
-
+	"github.com/gocql/gocql"
 	"golang.org/x/crypto/bcrypt"
+	"time"
 )
 
 type UserLogin struct {
-	ID        string    `json:"id"`
-	UserID    string    `json:"user_id" binding:"required"`
-	Email     string    `json:"email"`
-	Phone     string    `json:"phone"`
-	FirstName string    `json:"firstname"`
-	LastName  string    `json:"lastname"`
-	UserName  string    `json:"username" binding:"required"`
-	Password  string    `json:"password"`
-	Pin       string    `json:"pin"`
-	IsActive  bool      `json:"is_active"`
-	IsLocked  bool      `json:"is_locked"`
-	CreatedAt time.Time `json:"created_at"`
+	ID        gocql.UUID `json:"id"`
+	UserID    string     `json:"user_id" binding:"required"`
+	Email     string     `json:"email"`
+	Phone     string     `json:"phone"`
+	FirstName string     `json:"first_name"`
+	LastName  string     `json:"last_name"`
+	UserName  string     `json:"user_name" binding:"required"`
+	Password  string     `json:"password"`
+	Pin       string     `json:"pin"`
+	IsActive  bool       `json:"is_active"`
+	IsLocked  bool       `json:"is_locked"`
+	CreatedAt time.Time  `json:"created_at"`
 }
 
 func (k UserLogin) IsNoSQLEntity() bool {
+	//gocql.RandomUUID()
 	return true
 }
 

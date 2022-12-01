@@ -3,6 +3,7 @@ package users
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/novabankapp/common.infrastructure/postgres"
 	"github.com/novabankapp/usermanagement.data/domain/registration"
 	"gorm.io/gorm"
@@ -64,7 +65,7 @@ func (rep *postgresUserRepository) Update(ctx context.Context, user registration
 	// Save the updated user
 	tx := rep.conn.Save(&value)
 	if tx.RowsAffected != 1 {
-		return false, errors.New("Error occurred while updating user")
+		return false, errors.New("error occurred while updating user")
 	}
 	return true, nil
 }
@@ -88,21 +89,23 @@ func (rep *postgresUserRepository) Delete(ctx context.Context, user registration
 	}
 	return true, nil
 }
-func (rep *postgresUserRepository) GetUsers(ctx context.Context, page int, pageSize int, query string, orderBy string) (*[]registration.User, error) {
+func (rep *postgresUserRepository) GetUsers(ctx context.Context, page int, pageSize int, query *string, orderBy *string) (*[]registration.User, error) {
 	var users []registration.User
 
 	tx := rep.conn
-	if query != "" {
+
+	if query != nil {
+		//Where("name = 'jinni'")
 		tx = tx.Where(query)
 	}
-	if orderBy != "" {
+	if orderBy != nil {
 		//Order("created_at asc")
 		tx = tx.Order(orderBy)
 	}
 	tx = tx.Scopes(postgres.Paginate(page, pageSize)).Find(&users).WithContext(ctx)
-
+	fmt.Println(tx.RowsAffected)
 	if tx.RowsAffected == 0 {
-		return nil, errors.New("Read users returned with empty results")
+		return nil, errors.New("read users returned with empty results")
 	}
 	return &users, nil
 

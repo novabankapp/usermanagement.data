@@ -96,7 +96,6 @@ func (s *Suite) Test_repository_Create() {
 		CreatedAt: time.Now(),
 		IsLocked:  false,
 		IsActive:  true,
-		IsKyc:     false,
 	})
 	batch.Query(insertAccount.String())
 

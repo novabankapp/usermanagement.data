@@ -7,8 +7,8 @@ import (
 
 type UserOneTimePin struct {
 	gorm.Model
-	UserID     string    `json:"user_id" binding:"required"`
-	Pin        string    `json:"pin" binding:"required"`
+	UserID     string    `json:"user_id" binding:"required" gorm:"type:varchar;not null"`
+	Pin        string    `json:"pin" binding:"required" gorm:"type:varchar;not null"`
 	ExpiryDate time.Time `json:"expiry_date" binding:"required"`
 }
 

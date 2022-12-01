@@ -12,22 +12,22 @@ type UserID struct {
 }
 
 type User struct {
-	ID                 string             `gorm:"primaryKey" json:"id"`
-	FirstName          string             `json:"firstname" binding:"required"`
-	LastName           string             `json:"lastname" binding:"required"`
-	UserName           string             `json:"username" binding:"required"`
-	CreatedAt          time.Time          `json:"created_at"`
+	ID                 string             `gorm:"primaryKey" json:"id" gorm:"type:varchar;not null"`
+	FirstName          string             `json:"firstname" binding:"required" gorm:"type:varchar;not null"`
+	LastName           string             `json:"lastname" binding:"required" gorm:"type:varchar;not null"`
+	UserName           string             `json:"username" binding:"required" gorm:"type:varchar;not null"`
+	CreatedAt          time.Time          `json:"created_at" gorm:"default:CURRENT_TIMESTAMP()"`
 	UpdatedAt          time.Time          `json:"updated_at"`
-	Email              string             `json:"email"`
-	Phone              string             `json:"phone"`
+	Email              string             `json:"email" gorm:"type:varchar;not null"`
+	Phone              string             `json:"phone" gorm:"type:varchar;not null"`
 	DeletedAt          gorm.DeletedAt     `json:"deleted_at"`
-	UserDetails        UserDetails        `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	ResidenceDetails   ResidenceDetails   `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	UserIdentification UserIdentification `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	UserIncome         UserIncome         `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	UserEmployment     UserEmployment     `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	Contacts           []Contact          `json:"contacts" gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	UserOneTimePin     UserOneTimePin     `json:"one_time_pin" gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	UserDetails        UserDetails        `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" gorm:"foreignKey:ID"`
+	ResidenceDetails   ResidenceDetails   `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" gorm:"foreignKey:ID"`
+	UserIdentification UserIdentification `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" gorm:"foreignKey:ID"`
+	UserIncome         UserIncome         `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" gorm:"foreignKey:ID"`
+	UserEmployment     UserEmployment     `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" gorm:"foreignKey:ID"`
+	Contacts           []Contact          `json:"contacts" gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" gorm:"foreignKey:ID"`
+	UserOneTimePin     UserOneTimePin     `json:"one_time_pin" gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" gorm:"foreignKey:ID"`
 }
 
 func (e User) IsRDBMSEntity() bool {

@@ -16,19 +16,19 @@ import (
 	"github.com/scylladb/gocqlx/v2/qb"
 )
 
-type CassandraAuthRepository struct {
+type cassandraAuthRepository struct {
 	session *gocqlx.Session
 	timeout time.Duration
 }
 
 func NewCassandraAuthRepository(session *gocqlx.Session, timeout time.Duration) AuthRepository {
-	return &CassandraAuthRepository{
+	return &cassandraAuthRepository{
 		session: session,
 		timeout: timeout,
 	}
 }
 
-func (repo CassandraAuthRepository) CheckUsername(cxt context.Context, username string) (bool, error) {
+func (repo cassandraAuthRepository) CheckUsername(cxt context.Context, username string) (bool, error) {
 	ctx, cancel := context.WithTimeout(cxt, repo.timeout)
 	defer cancel()
 	var userId string
@@ -39,7 +39,7 @@ func (repo CassandraAuthRepository) CheckUsername(cxt context.Context, username 
 	return &userId != nil || userId == "", nil
 }
 
-func (repo CassandraAuthRepository) CheckEmail(cxt context.Context, email string) (bool, error) {
+func (repo cassandraAuthRepository) CheckEmail(cxt context.Context, email string) (bool, error) {
 	ctx, cancel := context.WithTimeout(cxt, repo.timeout)
 	defer cancel()
 	var userId string
@@ -50,7 +50,7 @@ func (repo CassandraAuthRepository) CheckEmail(cxt context.Context, email string
 	return &userId != nil || userId == "", nil
 }
 
-func (repo CassandraAuthRepository) VerifyOTP(cxt context.Context, userId string, pin string) (bool, error) {
+func (repo cassandraAuthRepository) VerifyOTP(cxt context.Context, userId string, pin string) (bool, error) {
 	ctx, cancel := context.WithTimeout(cxt, repo.timeout)
 	defer cancel()
 	now := time.Now()
@@ -61,7 +61,7 @@ func (repo CassandraAuthRepository) VerifyOTP(cxt context.Context, userId string
 	}
 	return true, nil
 }
-func (repo CassandraAuthRepository) VerifyEmailCode(cxt context.Context, userId string, code string) (bool, error) {
+func (repo cassandraAuthRepository) VerifyEmailCode(cxt context.Context, userId string, code string) (bool, error) {
 	ctx, cancel := context.WithTimeout(cxt, repo.timeout)
 	defer cancel()
 	now := time.Now()
@@ -73,7 +73,7 @@ func (repo CassandraAuthRepository) VerifyEmailCode(cxt context.Context, userId 
 
 }
 
-func (repo CassandraAuthRepository) ChangePassword(ctx context.Context, userId string, oldPassword string, newPassword string) (bool, error) {
+func (repo cassandraAuthRepository) ChangePassword(ctx context.Context, userId string, oldPassword string, newPassword string) (bool, error) {
 	ctx, cancel := context.WithTimeout(ctx, repo.timeout)
 	defer cancel()
 	passwordHashed, err := login.HashPassword(newPassword)
@@ -98,7 +98,7 @@ func (repo CassandraAuthRepository) ChangePassword(ctx context.Context, userId s
 	}
 	return applied, nil
 }
-func (repo CassandraAuthRepository) DeleteUser(cxt context.Context, userId string) (bool, error) {
+func (repo cassandraAuthRepository) DeleteUser(cxt context.Context, userId string) (bool, error) {
 	var tables = []string{constants.USERLOGIN, constants.USERACCOUNT, constants.KYC_COMPLIANT, constants.USERACTIVITIES}
 
 	ts := time.Now().UnixNano() / 1000
@@ -118,7 +118,7 @@ func (repo CassandraAuthRepository) DeleteUser(cxt context.Context, userId strin
 	return true, nil
 
 }
-func (repo CassandraAuthRepository) GetUserById(cxt context.Context, userId string) (*login.UserLogin, error) {
+func (repo cassandraAuthRepository) GetUserById(cxt context.Context, userId string) (*login.UserLogin, error) {
 	cxt, cancel := context.WithTimeout(cxt, repo.timeout)
 	defer cancel()
 	var user login.UserLogin
@@ -128,7 +128,7 @@ func (repo CassandraAuthRepository) GetUserById(cxt context.Context, userId stri
 	}
 	return &user, nil
 }
-func (repo CassandraAuthRepository) Login(ctx context.Context, username string, password string) (*[]account.UserAccount, error) {
+func (repo cassandraAuthRepository) Login(ctx context.Context, username string, password string) (*[]account.UserAccount, error) {
 	ctx, cancel := context.WithTimeout(ctx, repo.timeout)
 	defer cancel()
 
@@ -166,7 +166,7 @@ func (repo CassandraAuthRepository) Login(ctx context.Context, username string, 
 	}
 	return results, nil
 }
-func (repo CassandraAuthRepository) IsAccountLocked(userId string, ctx context.Context, session *gocqlx.Session) bool {
+func (repo cassandraAuthRepository) IsAccountLocked(userId string, ctx context.Context, session *gocqlx.Session) bool {
 	getUserAccount := qb.Select(constants.USERACCOUNT).
 		Where(qb.EqLit("user_id", userId)).
 		Query(*session).
@@ -185,7 +185,7 @@ func (repo CassandraAuthRepository) IsAccountLocked(userId string, ctx context.C
 	}
 	return true
 }
-func (repo CassandraAuthRepository) IsUserKycCompliant(userId string, ctx context.Context, session *gocqlx.Session) bool {
+func (repo cassandraAuthRepository) IsUserKycCompliant(userId string, ctx context.Context, session *gocqlx.Session) bool {
 	getUserAccount := qb.Select(constants.KYC_COMPLIANT).
 		Where(qb.EqLit("user_id", userId)).
 		Query(*session).
@@ -199,7 +199,7 @@ func (repo CassandraAuthRepository) IsUserKycCompliant(userId string, ctx contex
 
 	return acc.IsKycCompliant()
 }
-func (repo CassandraAuthRepository) Create(ctx context.Context, userAccount account.UserAccount,
+func (repo cassandraAuthRepository) Create(ctx context.Context, userAccount account.UserAccount,
 	userLogin login.UserLogin) (accountId *string, userId *string, error error) {
 	ctx, cancel := context.WithTimeout(ctx, repo.timeout)
 	defer cancel()
@@ -207,7 +207,11 @@ func (repo CassandraAuthRepository) Create(ctx context.Context, userAccount acco
 	accountColumns := structs.Names(&account.UserAccount{})
 	ts := time.Now().UnixNano() / 1000
 	batch := repo.session.NewBatch(gocql.LoggedBatch).WithTimestamp(ts)
-	userAccount.ID = uuid.New().String()
+	accountGuid, e := gocql.ParseUUID(uuid.New().String())
+	if e != nil {
+		return nil, nil, e
+	}
+	userAccount.ID = accountGuid
 	userAccount.CreatedAt = time.Now()
 	userAccount.IsActive = true
 	userAccount.IsLocked = false
@@ -217,8 +221,11 @@ func (repo CassandraAuthRepository) Create(ctx context.Context, userAccount acco
 		WithContext(ctx)
 	insertAccount.BindStruct(userAccount)
 	batch.Query(insertAccount.String())
-
-	userLogin.ID = uuid.New().String()
+	id, err := gocql.ParseUUID(uuid.New().String())
+	if err != nil {
+		return nil, nil, err
+	}
+	userLogin.ID = id
 	userLogin.CreatedAt = time.Now()
 	userLogin.HashPassword()
 	userLoginColumns := structs.Names(&login.UserLogin{})
@@ -231,6 +238,7 @@ func (repo CassandraAuthRepository) Create(ctx context.Context, userAccount acco
 	if err := repo.session.ExecuteBatch(batch); err != nil {
 		return nil, nil, err
 	}
-
-	return &userLogin.ID, &userAccount.ID, nil
+	i := userAccount.ID.String()
+	u := userLogin.ID.String()
+	return &i, &u, nil
 }

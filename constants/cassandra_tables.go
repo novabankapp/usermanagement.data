@@ -1,8 +1,8 @@
 package constants
 
-const USERLOGIN = "user_login"
-const USERACCOUNT = "user_account"
-const USERACTIVITIES = "user_activity"
+const USERLOGIN = "user_logins"
+const USERACCOUNT = "user_accounts"
+const USERACTIVITIES = "user_activities"
 const KYC_COMPLIANT = "kyc_compliant"
-const LOGINOTP = "login_otp"
-const LOGINCODE = "login_code"
+const LOGINOTP = "login_otps"
+const LOGINCODE = "login_codes"

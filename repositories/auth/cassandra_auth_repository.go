@@ -9,6 +9,7 @@ import (
 	"github.com/fatih/structs"
 	"github.com/gocql/gocql"
 	"github.com/google/uuid"
+	"github.com/novabankapp/common.data/utils"
 	"github.com/novabankapp/usermanagement.data/constants"
 	"github.com/novabankapp/usermanagement.data/domain/account"
 	"github.com/novabankapp/usermanagement.data/domain/login"
@@ -201,12 +202,13 @@ func (repo cassandraAuthRepository) IsUserKycCompliant(userId string, ctx contex
 }
 func (repo cassandraAuthRepository) Create(ctx context.Context, userAccount account.UserAccount,
 	userLogin login.UserLogin) (accountId *string, userId *string, error error) {
-	ctx, cancel := context.WithTimeout(ctx, repo.timeout)
-	defer cancel()
+	//ctx, cancel := context.WithTimeout(ctx, repo.timeout)
+	//defer cancel()
 
-	accountColumns := structs.Names(&account.UserAccount{})
-	ts := time.Now().UnixNano() / 1000
-	batch := repo.session.NewBatch(gocql.LoggedBatch).WithTimestamp(ts)
+	accountColumns := utils.Map(structs.Names(userAccount), utils.ToSnakeCase)
+
+	//ts := time.Now().UnixNano() / 1000
+	//batch := repo.session.NewBatch(gocql.LoggedBatch).WithTimestamp(ts)
 	accountGuid, e := gocql.ParseUUID(uuid.New().String())
 	if e != nil {
 		return nil, nil, e
@@ -217,25 +219,28 @@ func (repo cassandraAuthRepository) Create(ctx context.Context, userAccount acco
 	userAccount.IsLocked = false
 	insertAccount := qb.Insert(constants.USERACCOUNT).
 		Columns(accountColumns...).
-		Query(*repo.session).
-		WithContext(ctx)
+		Query(*repo.session)
 	insertAccount.BindStruct(userAccount)
-	batch.Query(insertAccount.String())
+	//batch.Query(insertAccount.Query.String())
+	if err := insertAccount.WithContext(ctx).ExecRelease(); err != nil {
+		return nil, nil, err
+	}
 	id, err := gocql.ParseUUID(uuid.New().String())
 	if err != nil {
+		fmt.Println(fmt.Sprintf("error creating user account:%s", err.Error()))
 		return nil, nil, err
 	}
 	userLogin.ID = id
 	userLogin.CreatedAt = time.Now()
 	userLogin.HashPassword()
-	userLoginColumns := structs.Names(&login.UserLogin{})
+	userLoginColumns := utils.Map(structs.Names(userLogin), utils.ToSnakeCase)
 	insertUserLogin := qb.Insert(constants.USERLOGIN).
 		Columns(userLoginColumns...).
-		Query(*repo.session).
-		WithContext(ctx)
+		Query(*repo.session)
 	insertUserLogin.BindStruct(userLogin)
-	batch.Query(insertUserLogin.String())
-	if err := repo.session.ExecuteBatch(batch); err != nil {
+	//batch.Query(insertUserLogin.Statement())
+	if err := insertUserLogin.WithContext(ctx).ExecRelease(); err != nil {
+		fmt.Println(fmt.Sprintf("error creating user login:%s", err.Error()))
 		return nil, nil, err
 	}
 	i := userAccount.ID.String()

@@ -10,3 +10,7 @@ type UserManagementError struct {
 func (r *UserManagementError) Error() string {
 	return fmt.Sprintf("err %v", r.Err)
 }
+
+var (
+	ErrorNotFound = fmt.Errorf("resource not found")
+)

@@ -227,7 +227,7 @@ func (repo cassandraAuthRepository) Create(ctx context.Context, userAccount acco
 	}
 	id, err := gocql.ParseUUID(uuid.New().String())
 	if err != nil {
-		fmt.Println(fmt.Sprintf("error creating user account:%s", err.Error()))
+
 		return nil, nil, err
 	}
 	userLogin.ID = id

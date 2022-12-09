@@ -39,7 +39,7 @@ func (rep *postgresUserRepository) Create(ctx context.Context, user registration
 	user.FillDefaults()
 	result := rep.conn.Create(&user).WithContext(ctx)
 	if result.Error != nil && result.RowsAffected != 1 {
-		return nil, errors.New("Error occurred while creating a new user")
+		return nil, errors.New("error occurred while creating a new user")
 
 	}
 
